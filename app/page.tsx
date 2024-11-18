@@ -112,7 +112,13 @@ export default function Home() {
               <LinkForm register={registerLink} />
             )}
           </div>
-          <QRCodePreview qrCode={qrCode} qrCodeSvg={qrCodeSvg} />
+          <QRCodePreview 
+            qrCode={qrCode} 
+            qrCodeSvg={qrCodeSvg} 
+            qrType={qrType}
+            vCardData={vCardValues}
+            linkData={linkValues}
+          />
         </div>
       </div>
     </main>

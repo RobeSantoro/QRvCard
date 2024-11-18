@@ -1,17 +1,41 @@
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
+import { QRType, VCardFormData, LinkFormData } from "../types";
 
 interface QRCodePreviewProps {
   qrCode: string;
   qrCodeSvg: string;
+  qrType: QRType;
+  vCardData: VCardFormData;
+  linkData: LinkFormData;
 }
 
-export function QRCodePreview({ qrCode, qrCodeSvg }: QRCodePreviewProps) {
+export function QRCodePreview({ qrCode, qrCodeSvg, qrType, vCardData, linkData }: QRCodePreviewProps) {
+  const generateFileName = () => {
+    if (qrType === "vcard") {
+      const firstName = (vCardData.firstName || "").trim();
+      const lastName = (vCardData.lastName || "").trim();
+      if (firstName || lastName) {
+        const name = `${firstName}${lastName}`;
+        // Convert to camelCase and remove special characters
+        return name.replace(/[^a-zA-Z0-9]/g, '');
+      }
+      return "vcard";
+    } else {
+      const url = (linkData.url || "").trim()
+        .replace(/^https?:\/\//, '') // Remove http:// or https://
+        .replace(/[\/\\?%*:|"<>]/g, '-') // Replace invalid filename characters with dash
+        .replace(/-+/g, '-') // Replace multiple dashes with single dash
+        .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
+      return url || "qrcode";
+    }
+  };
+
   const handlePngDownload = () => {
     if (qrCode) {
       const link = document.createElement('a');
       link.href = qrCode;
-      link.download = 'vcard-qr-code.png';
+      link.download = `${generateFileName()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -24,7 +48,7 @@ export function QRCodePreview({ qrCode, qrCodeSvg }: QRCodePreviewProps) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'vcard-qr-code.svg';
+      link.download = `${generateFileName()}.svg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
