@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Download, FileImage, Printer } from "lucide-react";
-import QRCode from "qrcode";
+import { Download, Printer } from "lucide-react";
 
 interface QRCodePreviewProps {
   qrCode: string;
@@ -15,39 +14,6 @@ export function QRCodePreview({ qrCode }: QRCodePreviewProps) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    }
-  };
-
-  const handleSvgDownload = async () => {
-    if (qrCode) {
-      try {
-        // Convert DataURL to actual vCard string
-        const vCardData = atob(qrCode.split(',')[1]);
-        
-        const svgString = await QRCode.toString(vCardData, {
-          type: 'svg',
-          margin: 1,
-          width: 256,
-          errorCorrectionLevel: 'M',
-          color: {
-            dark: '#000000',
-            light: '#ffffff',
-          },
-        });
-        
-        const blob = new Blob([svgString], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'vcard-qr-code.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("Error generating SVG:", err);
-        alert("Failed to generate SVG. Please try downloading as PNG instead.");
-      }
     }
   };
 
@@ -86,14 +52,6 @@ export function QRCodePreview({ qrCode }: QRCodePreviewProps) {
         >
           <Download className="mr-2 h-4 w-4" />
           Download PNG
-        </Button>
-        <Button 
-          className="w-full" 
-          onClick={handleSvgDownload}
-          disabled={!qrCode}
-        >
-          <FileImage className="mr-2 h-4 w-4" />
-          Download SVG
         </Button>
       </div>
     </div>
