@@ -19,6 +19,7 @@ import {
 
 export default function Home() {
   const [qrCode, setQrCode] = useState<string>("");
+  const [qrCodeSvg, setQrCodeSvg] = useState<string>("");
   const [qrType, setQRType] = useState<QRType>("vcard");
   const { register: registerVCard, watch: watchVCard } = useForm<VCardFormData>();
   const { register: registerLink, watch: watchLink } = useForm<LinkFormData>();
@@ -46,7 +47,8 @@ export default function Home() {
         }
 
         if (content) {
-          const url = await QRCode.toDataURL(content, {
+          // Generate PNG version
+          const pngUrl = await QRCode.toDataURL(content, {
             margin: 1,
             width: 400,
             color: {
@@ -54,13 +56,27 @@ export default function Home() {
               light: '#ffffff',
             },
           });
-          setQrCode(url);
+          setQrCode(pngUrl);
+
+          // Generate SVG version
+          const svgString = await QRCode.toString(content, {
+            type: 'svg',
+            margin: 1,
+            width: 400,
+            color: {
+              dark: '#000000',
+              light: '#ffffff',
+            },
+          });
+          setQrCodeSvg(svgString);
         } else {
           setQrCode("");
+          setQrCodeSvg("");
         }
       } catch (err) {
         console.error("Error generating QR code:", err);
         setQrCode("");
+        setQrCodeSvg("");
       }
     };
 
@@ -96,7 +112,7 @@ export default function Home() {
               <LinkForm register={registerLink} />
             )}
           </div>
-          <QRCodePreview qrCode={qrCode} />
+          <QRCodePreview qrCode={qrCode} qrCodeSvg={qrCodeSvg} />
         </div>
       </div>
     </main>

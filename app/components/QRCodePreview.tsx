@@ -3,9 +3,10 @@ import { Download, Printer } from "lucide-react";
 
 interface QRCodePreviewProps {
   qrCode: string;
+  qrCodeSvg: string;
 }
 
-export function QRCodePreview({ qrCode }: QRCodePreviewProps) {
+export function QRCodePreview({ qrCode, qrCodeSvg }: QRCodePreviewProps) {
   const handlePngDownload = () => {
     if (qrCode) {
       const link = document.createElement('a');
@@ -14,6 +15,20 @@ export function QRCodePreview({ qrCode }: QRCodePreviewProps) {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+  };
+
+  const handleSvgDownload = () => {
+    if (qrCodeSvg) {
+      const blob = new Blob([qrCodeSvg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'vcard-qr-code.svg';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -52,6 +67,15 @@ export function QRCodePreview({ qrCode }: QRCodePreviewProps) {
         >
           <Download className="mr-2 h-4 w-4" />
           Download PNG
+        </Button>
+        <Button 
+          className="w-full" 
+          onClick={handleSvgDownload}
+          variant="secondary"
+          disabled={!qrCodeSvg}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Download SVG
         </Button>
       </div>
     </div>
