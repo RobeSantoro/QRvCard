@@ -2,6 +2,8 @@
 
 Welcome to the QR VCard Generator, the tool you never knew you needed because, let's face it, everyone loves a good QR code, right? 
 
+https://github.com/user-attachments/assets/c2f080a1-cca5-49ab-b48d-8d36de8442f2
+
 ## 🎯 Features
 
 ### Generate VCard QR Codes
