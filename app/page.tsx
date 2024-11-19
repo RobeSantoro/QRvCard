@@ -21,6 +21,7 @@ export default function Home() {
   const [qrCode, setQrCode] = useState<string>("");
   const [qrCodeSvg, setQrCodeSvg] = useState<string>("");
   const [qrType, setQRType] = useState<QRType>("vcard");
+  const [qrStyle, setQrStyle] = useState<"positive" | "negative">("positive");
   const { register: registerVCard, watch: watchVCard } = useForm<VCardFormData>();
   const { register: registerLink, watch: watchLink } = useForm<LinkFormData>();
   
@@ -52,8 +53,8 @@ export default function Home() {
             margin: 1,
             width: 400,
             color: {
-              dark: '#000000',
-              light: '#ffffff',
+              dark: qrStyle === "positive" ? '#000000' : '#ffffff',
+              light: qrStyle === "positive" ? '#ffffff' : '#000000',
             },
           });
           setQrCode(pngUrl);
@@ -64,8 +65,8 @@ export default function Home() {
             margin: 1,
             width: 400,
             color: {
-              dark: '#000000',
-              light: '#ffffff',
+              dark: qrStyle === "positive" ? '#000000' : '#ffffff',
+              light: qrStyle === "positive" ? '#ffffff' : '#000000',
             },
           });
           setQrCodeSvg(svgString);
@@ -81,7 +82,7 @@ export default function Home() {
     };
 
     generateQRCode();
-  }, [qrType, vCardValues, linkValues]);
+  }, [qrType, qrStyle, vCardValues, linkValues]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
@@ -112,12 +113,13 @@ export default function Home() {
               <LinkForm register={registerLink} />
             )}
           </div>
-          <QRCodePreview 
-            qrCode={qrCode} 
-            qrCodeSvg={qrCodeSvg} 
+          <QRCodePreview
+            qrCode={qrCode}
+            qrCodeSvg={qrCodeSvg}
             qrType={qrType}
             vCardData={vCardValues}
             linkData={linkValues}
+            onStyleChange={setQrStyle}
           />
         </div>
       </div>

@@ -1,6 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import { QRType, VCardFormData, LinkFormData } from "../types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface QRCodePreviewProps {
   qrCode: string;
@@ -8,9 +15,10 @@ interface QRCodePreviewProps {
   qrType: QRType;
   vCardData: VCardFormData;
   linkData: LinkFormData;
+  onStyleChange?: (style: "positive" | "negative") => void;
 }
 
-export function QRCodePreview({ qrCode, qrCodeSvg, qrType, vCardData, linkData }: QRCodePreviewProps) {
+export function QRCodePreview({ qrCode, qrCodeSvg, qrType, vCardData, linkData, onStyleChange }: QRCodePreviewProps) {
   const generateFileName = () => {
     if (qrType === "vcard") {
       const firstName = (vCardData.firstName || "").trim();
@@ -75,6 +83,17 @@ export function QRCodePreview({ qrCode, qrCodeSvg, qrType, vCardData, linkData }
         )}
       </div>
       <div className="mt-6 space-y-3">
+        <div className="flex items-center gap-2 mb-2">
+          <Select onValueChange={(value: "positive" | "negative") => onStyleChange?.(value)} defaultValue="positive">
+            <SelectTrigger>
+              <SelectValue placeholder="QR Style" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="positive">Positive (Black on White)</SelectItem>
+              <SelectItem value="negative">Negative (White on Black)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <Button 
           className="w-full" 
           onClick={() => window.print()}
