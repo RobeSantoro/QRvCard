@@ -78,7 +78,7 @@ export function QRCodePreview({ qrCode, qrCodeSvg, qrType, vCardData, linkData, 
           />
         ) : (
           <div className="w-64 h-64 flex items-center justify-center bg-gray-100 rounded-lg">
-            <p className="text-gray-500">Enter your details to generate QR code</p>
+            <p className="text-gray-500 p-4">Enter your details to generate QR code</p>
           </div>
         )}
       </div>
