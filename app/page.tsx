@@ -28,68 +28,116 @@ export default function Home() {
   const vCardValues = watchVCard();
   const linkValues = watchLink();
 
+  const getThemeColors = () => {
+    // Get computed styles to access the actual color values
+    const root = document.documentElement;
+    const computedStyle = getComputedStyle(root);
+    
+    // Get the actual color values from CSS variables
+    const foreground = computedStyle.getPropertyValue('--foreground').trim();
+    const background = computedStyle.getPropertyValue('--background').trim();
+    
+    // Convert HSL values to RGB
+    const hslToRgb = (hsl: string) => {
+      // Parse the HSL string which is in format "H S% L%"
+      const [h, s, l] = hsl.split(' ').map(val => {
+        // Remove % sign and convert to number
+        const num = parseFloat(val.replace('%', ''));
+        // For hue, just return the number
+        if (val.includes('%')) {
+          return num / 100; // Convert percentage to decimal
+        }
+        return num;
+      });
+      
+      const s1 = s;
+      const l1 = l;
+      
+      const c = (1 - Math.abs(2 * l1 - 1)) * s1;
+      const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+      const m = l1 - c / 2;
+      
+      let r, g, b;
+      if (h < 60) [r, g, b] = [c, x, 0];
+      else if (h < 120) [r, g, b] = [x, c, 0];
+      else if (h < 180) [r, g, b] = [0, c, x];
+      else if (h < 240) [r, g, b] = [0, x, c];
+      else if (h < 300) [r, g, b] = [x, 0, c];
+      else [r, g, b] = [c, 0, x];
+      
+      const toHex = (n: number) => {
+        const hex = Math.round((n + m) * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+      };
+
+      return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    };
+
+    // For debugging
+    console.log('Foreground HSL:', foreground);
+    console.log('Background HSL:', background);
+    const fgColor = hslToRgb(foreground);
+    const bgColor = hslToRgb(background);
+    console.log('Foreground RGB:', fgColor);
+    console.log('Background RGB:', bgColor);
+
+    return {
+      foreground: fgColor,
+      background: bgColor
+    };
+  };
+
   useEffect(() => {
     const generateQRCode = async () => {
       try {
-        let content = "";
-        
-        if (qrType === "vcard") {
-          // Only generate vCard if at least one field has content
-          const hasContent = Object.values(vCardValues).some(value => value?.trim());
-          if (hasContent) {
-            content = generateVCardData(vCardValues);
-          }
-        } else {
-          // For links, only generate if URL is valid
-          const url = linkValues.url?.trim();
-          if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-            content = url;
-          }
-        }
-
-        if (content) {
-          // Generate PNG version
-          const pngUrl = await QRCode.toDataURL(content, {
-            margin: 1,
-            width: 400,
-            color: {
-              dark: qrStyle === "positive" ? '#000000' : '#ffffff',
-              light: qrStyle === "positive" ? '#ffffff' : '#000000',
-            },
-          });
-          setQrCode(pngUrl);
-
-          // Generate SVG version
-          const svgString = await QRCode.toString(content, {
-            type: 'svg',
-            margin: 1,
-            width: 400,
-            color: {
-              dark: qrStyle === "positive" ? '#000000' : '#ffffff',
-              light: qrStyle === "positive" ? '#ffffff' : '#000000',
-            },
-          });
-          setQrCodeSvg(svgString);
-        } else {
+        const qrData = qrType === "vcard" ? generateVCardData(vCardValues) : linkValues.url;
+        if (!qrData) {
           setQrCode("");
           setQrCodeSvg("");
+          return;
         }
-      } catch (err) {
-        console.error("Error generating QR code:", err);
+        // Always use true black and white for QR code
+        const black = "#000000";
+        const white = "#ffffff";
+        // Positive: black on white, Negative: white on black
+        const darkColor = qrStyle === "positive" ? black : white;
+        const lightColor = qrStyle === "positive" ? white : black;
+        // Generate PNG QR code
+        const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+          width: 400,
+          margin: 1,
+          color: {
+            dark: darkColor,
+            light: lightColor,
+          },
+        });
+        setQrCode(qrCodeDataUrl);
+        // Generate SVG QR code
+        const qrCodeSvgString = await QRCode.toString(qrData, {
+          type: "svg",
+          width: 400,
+          margin: 1,
+          color: {
+            dark: darkColor,
+            light: lightColor,
+          },
+        });
+        setQrCodeSvg(qrCodeSvgString);
+      } catch (error) {
+        console.error("Error generating QR code:", error);
         setQrCode("");
         setQrCodeSvg("");
       }
     };
-
     generateQRCode();
   }, [qrType, qrStyle, vCardValues, linkValues]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <QrCode className="h-16 w-16 mx-auto mb-4 text-primary" />
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             QR Generator
           </h1>
           <div className="max-w-xs mx-auto mb-4">
@@ -106,7 +154,7 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="bg-card text-card-foreground rounded-xl shadow-lg p-6">
             {qrType === "vcard" ? (
               <VCardForm register={registerVCard} />
             ) : (
